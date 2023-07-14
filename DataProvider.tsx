@@ -97,7 +97,7 @@ export const usedata = () => {
     const func = (event: MessageEvent) => {
       if (event.data.type === responseTypes.RESPONSE_TYPE) {
         const payload = event.data.payload;
-        console.log("payload from window", payload);
+        console.log("payload from window response event", payload);
         setData(payload);
       }
     };
