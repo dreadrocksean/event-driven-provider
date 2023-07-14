@@ -4,6 +4,7 @@ import React, {
   useCallback,
   useEffect,
   useState,
+  useRef,
 } from "react";
 
 export interface Data {
@@ -18,11 +19,17 @@ export interface ProviderResponse {
 
 export interface dataProviderProps {
   apiUrl: string;
+  storeName: string;
+  versionNumber?: number;
 }
 
-const TYPE_BASE = "namespace/store-name/v1";
-const RESPONSE_TYPE = `${TYPE_BASE}/response`;
-const REQUEST_TYPE = `${TYPE_BASE}/request`;
+const NAMESPACE = "company";
+const responseTypes = { RESPONSE_TYPE: "", REQUEST_TYPE: ""};
+const setResponseTypes = (storeName, versionNumber) => {
+    const TYPE_BASE = `${NAMESPACE}/${storeName}/v${versionNumber}`;
+    responseTypes.RESPONSE_TYPE = `${TYPE_BASE}/response`;
+    responseTypes.REQUEST_TYPE = `${TYPE_BASE}/request`;
+}
 
 const init: ProviderResponse = {
   data: [],
@@ -30,12 +37,14 @@ const init: ProviderResponse = {
 };
 
 const DataProvider: FC<dataProviderProps> = ({
-  apiUrl,
+  apiUrl, storeName, versionNumber = 1
 }): ReactElement | null => {
+  setResponseTypes(storeName, versionNumber); 
   const [data, setData] = useState(
     init.data
   );
   const [error, setError] = useState<Error | undefined>(undefined);
+
 
   const reset = useCallback(async () => {
     setData([]);
@@ -52,14 +61,14 @@ const DataProvider: FC<dataProviderProps> = ({
 
   const postMessage = useCallback(() => {
     window.postMessage({
-      type: RESPONSE_TYPE,
+      type: responseTypes.RESPONSE_TYPE,
       payload: { data, error },
     });
   }, [data, error]);
 
   useEffect(() => {
     const func = (event: MessageEvent) => {
-      if (event.data?.type === REQUEST_TYPE) postMessage();
+      if (event.data?.type === responseTypes.REQUEST_TYPE) postMessage();
     };
 
     postMessage();
@@ -81,12 +90,12 @@ export const usedata = () => {
   const [data, setData] = useState<ProviderResponse>(init);
 
   useEffect(() => {
-    window.postMessage({ type: REQUEST_TYPE });
+    window.postMessage({ type: responseTypes.REQUEST_TYPE });
   }, []);
 
   useEffect(() => {
     const func = (event: MessageEvent) => {
-      if (event.data.type === RESPONSE_TYPE) {
+      if (event.data.type === responseTypes.RESPONSE_TYPE) {
         const payload = event.data.payload;
         console.log("payload from window", payload);
         setData(payload);
