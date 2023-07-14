@@ -20,7 +20,7 @@ export interface dataProviderProps {
   apiUrl: string;
 }
 
-const TYPE_BASE = "name/system-notifications/v1";
+const TYPE_BASE = "namespace/store-name/v1";
 const RESPONSE_TYPE = `${TYPE_BASE}/response`;
 const REQUEST_TYPE = `${TYPE_BASE}/request`;
 
